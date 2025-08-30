@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Song Listing</title>
+</head>
+<body>
+<h1>Song List</h1>
+
+<input type="text" id="searchInput" placeholder="Search by title...">
+<button onclick="searchSongs()">Search</button>
+
+<h3>Add Song</h3>
+<form id="songForm">
+    Title: <input type="text" id="title"><br>
+    Artist: <input type="text" id="artist"><br>
+    Album: <input type="text" id="album"><br>
+    Genre: <input type="text" id="genre"><br>
+    Year: <input type="number" id="releaseYear"><br>
+    <button type="submit">Add</button>
+</form>
+
+<h3>All Songs</h3>
+<ul id="songList"></ul>
+
+<script>
+    async function loadSongs() {
+      const res = await fetch('/songs');
+      const songs = await res.json();
+      document.getElementById('songList').innerHTML =
+        songs.map(s => `<li>${s.title} - ${s.artist} (${s.releaseYear})</li>`).join('');
+    }
+
+    document.getElementById('songForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const song = {
+        title: document.getElementById('title').value,
+        artist: document.getElementById('artist').value,
+        album: document.getElementById('album').value,
+        genre: document.getElementById('genre').value,
+        releaseYear: parseInt(document.getElementById('releaseYear').value)
+      };
+      await fetch('/songs', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(song)
+      });
+      loadSongs();
+    });
+
+    async function searchSongs() {
+      const q = document.getElementById('searchInput').value;
+      const res = await fetch(`/songs/search?title=${q}`);
+      const songs = await res.json();
+      document.getElementById('songList').innerHTML =
+        songs.map(s => `<li>${s.title} - ${s.artist} (${s.releaseYear})</li>`).join('');
+    }
+
+    loadSongs();
+</script>
+</body>
+</html>
